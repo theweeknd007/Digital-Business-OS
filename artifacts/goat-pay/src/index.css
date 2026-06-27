@@ -105,94 +105,67 @@
 @layer utilities {
   .glow-card {
     background: hsl(135, 20%, 5%);
-    border: 1.5px solid rgba(0, 230, 118, 0.25);
-    box-shadow:
-      0 0 0 1px rgba(0, 230, 118, 0.08) inset,
-      0 4px 24px rgba(0, 0, 0, 0.4),
-      0 0 8px rgba(0, 230, 118, 0.05);
+    border: 1px solid rgba(0, 230, 118, 0.2);
+    box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.05) inset, 0 4px 24px rgba(0, 0, 0, 0.4);
   }
-
   .glow-card:hover {
-    border-color: rgba(0, 230, 118, 0.5);
-    box-shadow:
-      0 0 0 1px rgba(0, 230, 118, 0.15) inset,
-      0 4px 24px rgba(0, 0, 0, 0.4),
-      0 0 30px rgba(0, 230, 118, 0.12);
+    border-color: rgba(0, 230, 118, 0.4);
+    box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.1) inset, 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 230, 118, 0.05);
   }
-
   .glow-card-active {
     background: hsl(135, 20%, 5%);
-    border: 1.5px solid rgba(0, 230, 118, 0.5);
-    box-shadow:
-      0 0 0 1px rgba(0, 230, 118, 0.15) inset,
-      0 4px 24px rgba(0, 0, 0, 0.4),
-      0 0 40px rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.08) inset, 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 230, 118, 0.08);
   }
-
   .glow-btn {
     background: linear-gradient(135deg, #00e676, #00c853);
-    box-shadow: 0 0 30px rgba(0, 230, 118, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease;
   }
-
   .glow-btn:hover {
-    box-shadow: 0 0 50px rgba(0, 230, 118, 0.7), 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 30px rgba(0, 230, 118, 0.6), 0 4px 16px rgba(0, 0, 0, 0.3);
     transform: translateY(-1px);
   }
-
   .glow-text {
     color: #00e676;
     text-shadow: 0 0 12px rgba(0, 230, 118, 0.5), 0 0 24px rgba(0, 230, 118, 0.3);
   }
-
   .glow-text-strong {
     color: #00e676;
-    text-shadow: 0 0 20px rgba(0, 230, 118, 0.9), 0 0 40px rgba(0, 230, 118, 0.5), 0 0 60px rgba(0, 230, 118, 0.3);
+    text-shadow: 0 0 16px rgba(0, 230, 118, 0.8), 0 0 32px rgba(0, 230, 118, 0.5), 0 0 48px rgba(0, 230, 118, 0.2);
   }
-
   .sidebar-item-active {
-    background: rgba(0, 230, 118, 0.1);
+    background: rgba(0, 230, 118, 0.08);
     border-left: 3px solid #00e676;
     color: #00e676;
-    box-shadow: 0 0 12px rgba(0, 230, 118, 0.1) inset;
   }
-
   .sidebar-item {
     border-left: 3px solid transparent;
     color: rgba(255, 255, 255, 0.55);
     transition: all 0.15s ease;
   }
-
   .sidebar-item:hover {
-    background: rgba(0, 230, 118, 0.08);
-    border-left-color: rgba(0, 230, 118, 0.5);
-    color: rgba(255, 255, 255, 0.9);
+    background: rgba(0, 230, 118, 0.05);
+    border-left-color: rgba(0, 230, 118, 0.4);
+    color: rgba(255, 255, 255, 0.85);
   }
-
   .chart-glow {
-    filter: drop-shadow(0 0 8px rgba(0, 230, 118, 0.6));
+    filter: drop-shadow(0 0 6px rgba(0, 230, 118, 0.6));
   }
-
   .logo-glow {
-    filter: drop-shadow(0 0 25px rgba(0, 230, 118, 0.9)) drop-shadow(0 0 50px rgba(0, 230, 118, 0.4)) drop-shadow(0 0 80px rgba(0, 230, 118, 0.2));
+    filter: drop-shadow(0 0 16px rgba(0, 230, 118, 0.7)) drop-shadow(0 0 32px rgba(0, 230, 118, 0.3));
   }
-
   .grid-bg {
-    background-image:
-      linear-gradient(rgba(0, 230, 118, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 230, 118, 0.04) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(0, 230, 118, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 230, 118, 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
   }
-
   .number-display {
     font-feature-settings: "tnum";
     font-variant-numeric: tabular-nums;
   }
-
   .pulse-green {
     animation: pulse-green 2s ease-in-out infinite;
   }
-
   @keyframes pulse-green {
     0%, 100% { box-shadow: 0 0 10px rgba(0, 230, 118, 0.3); }
     50% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.6); }
