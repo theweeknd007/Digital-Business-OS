@@ -10,30 +10,22 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
   --color-card-border: hsl(var(--card-border));
-
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
   --color-popover-border: hsl(var(--popover-border));
-
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
-
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
-
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
-
   --color-sidebar: hsl(var(--sidebar));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
   --color-sidebar-border: hsl(var(--sidebar-border));
@@ -41,10 +33,8 @@
   --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
   --color-sidebar-accent: hsl(var(--sidebar-accent));
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-
   --font-sans: var(--app-font-sans);
   --font-mono: var(--app-font-mono);
-
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -52,37 +42,27 @@
 }
 
 :root, .dark {
-  /* GOAT-PAY Dark Theme */
   --background: 135 20% 3%;
   --foreground: 0 0% 95%;
-
   --border: 135 15% 10%;
   --input: 135 15% 10%;
   --ring: 145 100% 45%;
-
   --card: 135 20% 5%;
   --card-foreground: 0 0% 95%;
   --card-border: 145 30% 12%;
-
   --popover: 135 20% 5%;
   --popover-foreground: 0 0% 95%;
   --popover-border: 145 30% 12%;
-
   --primary: 145 100% 44%;
   --primary-foreground: 0 0% 0%;
-
   --secondary: 135 15% 9%;
   --secondary-foreground: 0 0% 90%;
-
   --muted: 135 15% 9%;
   --muted-foreground: 0 0% 55%;
-
   --accent: 145 100% 44%;
   --accent-foreground: 0 0% 0%;
-
   --destructive: 0 80% 55%;
   --destructive-foreground: 0 0% 98%;
-
   --sidebar: 135 25% 4%;
   --sidebar-foreground: 0 0% 90%;
   --sidebar-border: 145 20% 8%;
@@ -90,12 +70,9 @@
   --sidebar-primary-foreground: 0 0% 0%;
   --sidebar-accent: 135 20% 8%;
   --sidebar-accent-foreground: 0 0% 90%;
-
   --app-font-sans: 'Inter', system-ui, sans-serif;
   --app-font-mono: 'Space Mono', monospace;
   --radius: 0.5rem;
-
-  /* Glow colors */
   --glow-green: rgba(0, 230, 118, 0.15);
   --glow-green-strong: rgba(0, 230, 118, 0.35);
   --neon: #00e676;
@@ -107,7 +84,7 @@
   }
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    background-color: hsl(135, 20%, 3%);
+    background-color: hsl(135, 20%, 2%);
   }
   ::-webkit-scrollbar {
     width: 4px;
@@ -125,84 +102,99 @@
   }
 }
 
-/* GOAT-PAY Custom Utilities */
 @layer utilities {
   .glow-card {
     background: hsl(135, 20%, 5%);
-    border: 1px solid rgba(0, 230, 118, 0.15);
+    border: 1.5px solid rgba(0, 230, 118, 0.25);
     box-shadow:
-      0 0 0 1px rgba(0, 230, 118, 0.05) inset,
-      0 4px 24px rgba(0, 0, 0, 0.4);
+      0 0 0 1px rgba(0, 230, 118, 0.08) inset,
+      0 4px 24px rgba(0, 0, 0, 0.4),
+      0 0 8px rgba(0, 230, 118, 0.05);
   }
 
   .glow-card:hover {
-    border-color: rgba(0, 230, 118, 0.3);
+    border-color: rgba(0, 230, 118, 0.5);
     box-shadow:
-      0 0 0 1px rgba(0, 230, 118, 0.1) inset,
+      0 0 0 1px rgba(0, 230, 118, 0.15) inset,
       0 4px 24px rgba(0, 0, 0, 0.4),
-      0 0 20px rgba(0, 230, 118, 0.05);
+      0 0 30px rgba(0, 230, 118, 0.12);
   }
 
   .glow-card-active {
     background: hsl(135, 20%, 5%);
-    border: 1px solid rgba(0, 230, 118, 0.3);
+    border: 1.5px solid rgba(0, 230, 118, 0.5);
     box-shadow:
-      0 0 0 1px rgba(0, 230, 118, 0.08) inset,
+      0 0 0 1px rgba(0, 230, 118, 0.15) inset,
       0 4px 24px rgba(0, 0, 0, 0.4),
-      0 0 30px rgba(0, 230, 118, 0.08);
+      0 0 40px rgba(0, 230, 118, 0.15);
   }
 
   .glow-btn {
     background: linear-gradient(135deg, #00e676, #00c853);
-    box-shadow: 0 0 20px rgba(0, 230, 118, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 30px rgba(0, 230, 118, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease;
   }
 
   .glow-btn:hover {
-    box-shadow: 0 0 30px rgba(0, 230, 118, 0.6), 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 50px rgba(0, 230, 118, 0.7), 0 4px 16px rgba(0, 0, 0, 0.3);
     transform: translateY(-1px);
   }
 
   .glow-text {
     color: #00e676;
-    text-shadow: 0 0 12px rgba(0, 230, 118, 0.5);
+    text-shadow: 0 0 12px rgba(0, 230, 118, 0.5), 0 0 24px rgba(0, 230, 118, 0.3);
+  }
+
+  .glow-text-strong {
+    color: #00e676;
+    text-shadow: 0 0 20px rgba(0, 230, 118, 0.9), 0 0 40px rgba(0, 230, 118, 0.5), 0 0 60px rgba(0, 230, 118, 0.3);
   }
 
   .sidebar-item-active {
-    background: rgba(0, 230, 118, 0.08);
+    background: rgba(0, 230, 118, 0.1);
     border-left: 3px solid #00e676;
     color: #00e676;
+    box-shadow: 0 0 12px rgba(0, 230, 118, 0.1) inset;
   }
 
   .sidebar-item {
     border-left: 3px solid transparent;
-    color: rgba(255,255,255,0.55);
+    color: rgba(255, 255, 255, 0.55);
     transition: all 0.15s ease;
   }
 
   .sidebar-item:hover {
-    background: rgba(0, 230, 118, 0.05);
-    border-left-color: rgba(0, 230, 118, 0.4);
-    color: rgba(255,255,255,0.85);
+    background: rgba(0, 230, 118, 0.08);
+    border-left-color: rgba(0, 230, 118, 0.5);
+    color: rgba(255, 255, 255, 0.9);
   }
 
   .chart-glow {
-    filter: drop-shadow(0 0 6px rgba(0, 230, 118, 0.6));
+    filter: drop-shadow(0 0 8px rgba(0, 230, 118, 0.6));
   }
 
   .logo-glow {
-    filter: drop-shadow(0 0 16px rgba(0, 230, 118, 0.7)) drop-shadow(0 0 32px rgba(0, 230, 118, 0.3));
+    filter: drop-shadow(0 0 25px rgba(0, 230, 118, 0.9)) drop-shadow(0 0 50px rgba(0, 230, 118, 0.4)) drop-shadow(0 0 80px rgba(0, 230, 118, 0.2));
   }
 
   .grid-bg {
     background-image:
-      linear-gradient(rgba(0, 230, 118, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 230, 118, 0.03) 1px, transparent 1px);
+      linear-gradient(rgba(0, 230, 118, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 230, 118, 0.04) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 
   .number-display {
     font-feature-settings: "tnum";
     font-variant-numeric: tabular-nums;
+  }
+
+  .pulse-green {
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 10px rgba(0, 230, 118, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(0, 230, 118, 0.6); }
   }
 }
