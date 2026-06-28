@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { NotificationsProvider } from "@/contexts/NotificationsContext";
 
 import { AppLayout } from "./components/layout/AppLayout";
 
@@ -14,6 +15,7 @@ import Wallet from "./pages/wallet";
 import Withdrawals from "./pages/withdrawals";
 import Affiliates from "./pages/affiliates";
 import Settings from "./pages/settings";
+import NotificationsPage from "./pages/notifications";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -35,6 +37,7 @@ function Router() {
             <Route path="/withdrawals" component={Withdrawals} />
             <Route path="/affiliates" component={Affiliates} />
             <Route path="/settings" component={Settings} />
+            <Route path="/notifications" component={NotificationsPage} />
             <Route component={NotFound} />
           </Switch>
         </AppLayout>
@@ -46,14 +49,16 @@ function Router() {
 function App() {
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <NotificationsProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </NotificationsProvider>
     </ThemeProvider>
   );
 }
