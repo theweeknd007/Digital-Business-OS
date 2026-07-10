@@ -1,9 +1,22 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { db, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
 
-const JWT_SECRET = process.env.SESSION_SECRET ?? "goatpay-dev-secret-change-in-production";
+// ── JWT Secret ─────────────────────────────────────────────────────────────
+// In production, SESSION_SECRET MUST be set. Fallback only allowed in dev.
+const JWT_SECRET = (() => {
+  const s = process.env.SESSION_SECRET;
+  if (!s) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SESSION_SECRET environment variable is required in production");
+    }
+    return "goatpay-dev-secret-DO-NOT-USE-IN-PRODUCTION";
+  }
+  if (s.length < 32) {
+    throw new Error("SESSION_SECRET must be at least 32 characters long");
+  }
+  return s;
+})();
+
 const COOKIE_NAME = "gp_token";
 const TOKEN_EXPIRY = "7d";
 
@@ -37,18 +50,25 @@ export function verifyToken(token: string): AuthPayload | null {
 export function setAuthCookie(res: Response, token: string): void {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    // Always secure — Replit dev environment is HTTPS, and production must be too
+    secure: true,
+    sameSite: "none",   // Required for cross-origin iframe contexts (Replit preview)
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/",
   });
 }
 
 export function clearAuthCookie(res: Response): void {
-  res.clearCookie(COOKIE_NAME, { path: "/" });
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  // Prefer cookie; fall back to Authorization: Bearer <token>
   const token = req.cookies?.[COOKIE_NAME] ?? extractBearerToken(req);
   if (!token) {
     res.status(401).json({ error: "Não autenticado" });
