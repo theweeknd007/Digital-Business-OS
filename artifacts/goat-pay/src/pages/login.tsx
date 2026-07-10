@@ -3,9 +3,10 @@ import { useLocation } from "wouter";
 import {
   Eye, EyeOff, Mail, Lock, User, Phone, Calendar,
   ArrowRight, Chrome, Apple, Facebook, ShieldCheck,
-  TrendingUp, Zap, Globe, Check,
+  TrendingUp, Zap, Globe, Check, AlertCircle,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 type AuthMode = "login" | "register" | "forgot" | "verify" | "2fa";
 
@@ -104,9 +105,11 @@ const BENEFITS = [
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { theme } = useTheme();
+  const { login, register, user } = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   const [form, setForm] = useState({
@@ -115,25 +118,59 @@ export default function LoginPage() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [agreed, setAgreed] = useState(false);
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAuthError(null);
     setForm((f) => ({ ...f, [k]: e.target.value }));
+  };
 
   useEffect(() => { setTimeout(() => setMounted(true), 80); }, []);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) setLocation("/dashboard");
+  }, [user, setLocation]);
 
   const isDark = theme === "dark";
   const neon = isDark ? "#00e676" : "#00a84f";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (mode === "login") setLocation("/dashboard");
-      else if (mode === "register") setMode("verify");
-      else if (mode === "forgot") setMode("verify");
-      else if (mode === "verify") setMode("2fa");
-      else setLocation("/dashboard");
-    }, 1200);
+    setAuthError(null);
+
+    if (mode === "login") {
+      if (!form.email || !form.password) { setAuthError("Preencha email e senha"); return; }
+      setLoading(true);
+      try {
+        await login(form.email, form.password);
+        setLocation("/dashboard");
+      } catch (err) {
+        setAuthError(err instanceof Error ? err.message : "Erro ao fazer login");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (mode === "register") {
+      if (!form.firstName || !form.email || !form.password) { setAuthError("Preencha todos os campos obrigatórios"); return; }
+      if (!agreed) { setAuthError("Aceite os termos para continuar"); return; }
+      if (form.password.length < 8) { setAuthError("Senha deve ter ao menos 8 caracteres"); return; }
+      setLoading(true);
+      try {
+        const fullName = `${form.firstName} ${form.lastName}`.trim();
+        await register(fullName, form.email, form.password);
+        setLocation("/dashboard");
+      } catch (err) {
+        setAuthError(err instanceof Error ? err.message : "Erro ao criar conta");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (mode === "forgot") { setMode("verify"); return; }
+    if (mode === "verify") { setMode("2fa"); return; }
+    if (mode === "2fa") { setLocation("/dashboard"); return; }
   };
 
   const handleOtp = (i: number, val: string) => {
@@ -309,6 +346,15 @@ export default function LoginPage() {
               )}
             </p>
           </div>
+
+          {/* Auth error banner */}
+          {authError && (
+            <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl mb-1"
+              style={{ background: "rgba(244,67,54,0.1)", border: "1px solid rgba(244,67,54,0.3)" }}>
+              <AlertCircle className="w-4 h-4 shrink-0" style={{ color: "#f44336" }} />
+              <span className="text-sm" style={{ color: "#f44336" }}>{authError}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* ─ REGISTER fields ─ */}

@@ -1,3 +1,5 @@
 - [GOAT-PAY Theme System](goat-pay-theme.md) — dual dark/light via CSS variables on <html>, toggle via useTheme() hook persisted to localStorage
 - [GOAT-PAY API Types](goat-pay-api-types.md) — key field names that differ from intuition: Sale.customerName, Affiliate.totalSales, AffiliateStats.totalCommissionPaid, WithdrawalInput requires pixKey
 - [GOAT-PAY Branding Rules](goat-pay-branding.md) — never reference Hotmart/EscalePay/Cakto/Kiwify/Eduzz; neon colors #00e676 dark / #00a84f light
+- [Zod v4 API quirks](zod-v4-api.md) — api-server needs `zod` as direct dep; uses `.issues` not `.errors`; import from `"zod/v4"`
+- [ProtectedRoute redirect pattern](protected-route.md) — never call `setLocation` during render; use `useEffect` to redirect on auth state change

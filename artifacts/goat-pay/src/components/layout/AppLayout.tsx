@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useNotifications, NOTIF_ICONS, NOTIF_COLORS } from "@/contexts/NotificationsContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 type NavGroup = {
   label: string;
@@ -50,7 +51,6 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/settings", label: "IA GOAT", icon: Brain },
       { href: "/notifications", label: "Notificações", icon: Bell },
       { href: "/settings", label: "Configurações", icon: Settings },
-      { href: "/settings", label: "Administrador", icon: Shield },
     ],
   },
 ];
@@ -66,6 +66,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [location, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
+  const { user, logout, isAdmin } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -172,18 +173,34 @@ export function AppLayout({ children }: { children: ReactNode }) {
           ))}
         </nav>
 
+        {/* Admin link (admin users only) */}
+        {isAdmin && (
+          <Link href="/admin">
+            <div onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 mx-2 mb-2 px-3 py-2.5 rounded-xl cursor-pointer text-sm font-bold transition-all ${location === "/admin" ? "sidebar-item-active" : "sidebar-item"}`}
+              style={{ border: `1px solid ${location === "/admin" ? neon + "40" : "transparent"}` }}>
+              <Shield className="w-4 h-4 shrink-0" />
+              <span className="flex-1">Painel Admin</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-black"
+                style={{ background: "#6366f120", color: "#6366f1" }}>ADM</span>
+            </div>
+          </Link>
+        )}
+
         {/* User bottom */}
         <div className="p-3 shrink-0" style={{ borderTop: `1px solid ${borderColor}` }}>
           <div className="flex items-center gap-3 px-1">
-            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0"
-              style={{ background: isDark ? "rgba(0,230,118,0.12)" : "rgba(0,180,80,0.08)", border: `1.5px solid ${neon}33` }}>
-              <img src="/goat-logo.png" alt="user" className="w-6 h-6 object-contain" />
+            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-black"
+              style={{ background: isDark ? "rgba(0,230,118,0.12)" : "rgba(0,180,80,0.08)", border: `1.5px solid ${neon}33`, color: neon }}>
+              {user?.name?.[0]?.toUpperCase() ?? "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold truncate" style={{ color: textPrimary }}>SKILL</div>
-              <div className="text-[10px] truncate" style={{ color: neon }}>Elite Member</div>
+              <div className="text-xs font-bold truncate" style={{ color: textPrimary }}>{user?.name ?? "..."}</div>
+              <div className="text-[10px] truncate" style={{ color: neon }}>
+                {user?.role === "admin" ? "Administrador" : "Elite Member"}
+              </div>
             </div>
-            <button onClick={() => setLocation("/login")}
+            <button onClick={async () => { await logout(); setLocation("/login"); }}
               className="p-1.5 rounded-lg transition-all"
               style={{ background: surfaceColor }}
               title="Sair">
@@ -354,8 +371,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   <img src="/goat-logo.png" alt="user" className="w-5 h-5 object-contain" />
                 </div>
                 <div className="hidden sm:block text-left">
-                  <div className="text-xs font-bold leading-tight" style={{ color: textPrimary }}>SKILL</div>
-                  <div className="text-[10px] leading-tight" style={{ color: neon }}>Elite</div>
+                  <div className="text-xs font-bold leading-tight" style={{ color: textPrimary }}>{user?.name?.split(" ")[0] ?? "..."}</div>
+                  <div className="text-[10px] leading-tight" style={{ color: neon }}>
+                    {user?.role === "admin" ? "Admin" : "Elite"}
+                  </div>
                 </div>
                 <ChevronDown className="w-3 h-3 hidden sm:block" style={{ color: textMuted }} />
               </button>
@@ -369,17 +388,22 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   }}>
                   <div className="p-4" style={{ borderBottom: `1px solid ${borderColor}` }}>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                        style={{ background: isDark ? "rgba(0,230,118,0.12)" : "rgba(0,180,80,0.08)", border: `1.5px solid ${neon}33` }}>
-                        <img src="/goat-logo.png" alt="user" className="w-6 h-6 object-contain" />
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black"
+                        style={{ background: isDark ? "rgba(0,230,118,0.12)" : "rgba(0,180,80,0.08)", border: `1.5px solid ${neon}33`, color: neon }}>
+                        {user?.name?.[0]?.toUpperCase() ?? "U"}
                       </div>
                       <div>
-                        <div className="text-sm font-bold" style={{ color: textPrimary }}>SKILL</div>
-                        <div className="text-xs" style={{ color: textMuted }}>skill@goatpay.com</div>
+                        <div className="text-sm font-bold" style={{ color: textPrimary }}>{user?.name ?? "..."}</div>
+                        <div className="text-xs" style={{ color: textMuted }}>{user?.email ?? ""}</div>
                       </div>
                     </div>
                     <div className="text-[10px] px-2 py-0.5 rounded-full inline-block font-bold"
-                      style={{ background: `${neon}20`, color: neon }}>Elite Member</div>
+                      style={{
+                        background: user?.role === "admin" ? "#6366f120" : `${neon}20`,
+                        color: user?.role === "admin" ? "#6366f1" : neon,
+                      }}>
+                      {user?.role === "admin" ? "Administrador" : "Elite Member"}
+                    </div>
                   </div>
                   {[
                     { icon: User, label: "Meu perfil", href: "/settings" },
@@ -406,7 +430,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   ))}
                   <button className="w-full flex items-center gap-3 px-4 py-3 text-sm transition-all"
                     style={{ color: "#f44336" }}
-                    onClick={() => setLocation("/login")}
+                    onClick={async () => { setProfileOpen(false); await logout(); setLocation("/login"); }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(244,67,54,0.08)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
                     <LogOut className="w-4 h-4" />
