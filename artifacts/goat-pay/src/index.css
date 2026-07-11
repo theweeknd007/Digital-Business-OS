@@ -142,22 +142,161 @@
   ::-webkit-scrollbar-thumb:hover { background: rgba(0,180,80,0.4); }
 }
 
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS — Designer-level motion system
+═══════════════════════════════════════════════════════ */
+
+@keyframes gp-fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gp-fade-in-down {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes gp-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gp-slide-in-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gp-slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gp-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes gp-float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-6px) rotate(1deg); }
+  66%       { transform: translateY(-3px) rotate(-0.5deg); }
+}
+
+@keyframes gp-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@keyframes gp-neon-pulse {
+  0%, 100% { box-shadow: 0 0 8px var(--neon-glow, rgba(0,230,118,0.3)), 0 0 24px var(--neon-glow, rgba(0,230,118,0.1)); }
+  50%       { box-shadow: 0 0 20px var(--neon-glow, rgba(0,230,118,0.6)), 0 0 48px var(--neon-glow, rgba(0,230,118,0.2)); }
+}
+
+@keyframes gp-neon-pulse-text {
+  0%, 100% { text-shadow: 0 0 8px rgba(0,230,118,0.4); }
+  50%       { text-shadow: 0 0 20px rgba(0,230,118,0.8), 0 0 40px rgba(0,230,118,0.3); }
+}
+
+@keyframes gp-spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes gp-bounce-in {
+  0%   { opacity: 0; transform: scale(0.3); }
+  50%  { opacity: 1; transform: scale(1.08); }
+  70%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+@keyframes gp-counter {
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes gp-border-glow {
+  0%, 100% { border-color: rgba(0,230,118,0.15); }
+  50%       { border-color: rgba(0,230,118,0.5); }
+}
+
+@keyframes gp-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes gp-typewriter {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 10px color-mix(in srgb, var(--neon) 30%, transparent); }
+  50% { box-shadow: 0 0 25px color-mix(in srgb, var(--neon) 60%, transparent); }
+}
+
+/* ─── Animation utility classes ─── */
 @layer utilities {
+  .animate-gp-fade-in-up    { animation: gp-fade-in-up 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-gp-fade-in-down  { animation: gp-fade-in-down 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-gp-fade-in       { animation: gp-fade-in 0.4s ease both; }
+  .animate-gp-scale-in      { animation: gp-scale-in 0.35s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-gp-slide-in-left { animation: gp-slide-in-left 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-gp-slide-in-right{ animation: gp-slide-in-right 0.4s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-gp-float         { animation: gp-float 4s ease-in-out infinite; }
+  .animate-gp-float-slow    { animation: gp-float-slow 7s ease-in-out infinite; }
+  .animate-gp-neon-pulse    { animation: gp-neon-pulse 2.5s ease-in-out infinite; }
+  .animate-gp-neon-pulse-text { animation: gp-neon-pulse-text 3s ease-in-out infinite; }
+  .animate-gp-spin-slow     { animation: gp-spin-slow 12s linear infinite; }
+  .animate-gp-bounce-in     { animation: gp-bounce-in 0.6s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+  .animate-gp-counter       { animation: gp-counter 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+  .animate-gp-border-glow   { animation: gp-border-glow 2s ease-in-out infinite; }
+
+  /* Stagger delays */
+  .delay-50  { animation-delay: 50ms; }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-150 { animation-delay: 150ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-250 { animation-delay: 250ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+
+  /* ─── SHIMMER skeleton ─── */
+  .gp-shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--surface) 25%,
+      color-mix(in srgb, var(--neon) 6%, var(--surface)) 50%,
+      var(--surface) 75%
+    );
+    background-size: 800px 100%;
+    animation: gp-shimmer 1.8s infinite linear;
+  }
+
   /* ─── CARDS ─── */
   .gp-card {
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    border-radius: 14px;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
   }
   .gp-card:hover {
-    border-color: color-mix(in srgb, var(--neon) 40%, transparent);
-    box-shadow: 0 0 20px color-mix(in srgb, var(--neon) 6%, transparent);
+    border-color: color-mix(in srgb, var(--neon) 45%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--neon) 12%, transparent), 0 8px 32px rgba(0,0,0,0.12);
+    transform: translateY(-1px);
   }
 
-  /* Dark-specific card enhancements */
   .dark .gp-card {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+  }
+  .dark .gp-card:hover {
+    box-shadow: 0 0 0 1px rgba(0,230,118,0.18), 0 8px 40px rgba(0,0,0,0.5), 0 0 24px rgba(0,230,118,0.06);
   }
 
   /* ─── BUTTON ─── */
@@ -166,35 +305,48 @@
     color: #000;
     font-weight: 700;
     border-radius: 10px;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
     box-shadow: 0 0 20px color-mix(in srgb, var(--neon) 35%, transparent);
+    position: relative;
+    overflow: hidden;
+  }
+  .gp-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
   }
   .gp-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 30px color-mix(in srgb, var(--neon) 50%, transparent);
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 0 32px color-mix(in srgb, var(--neon) 55%, transparent), 0 8px 24px rgba(0,0,0,0.2);
   }
+  .gp-btn:hover::after { opacity: 1; }
+  .gp-btn:active { transform: scale(0.98); }
 
   /* ─── SIDEBAR ITEMS ─── */
   .sidebar-item {
     color: var(--text-muted);
     border-left: 3px solid transparent;
-    transition: all 0.15s;
-    border-radius: 0 8px 8px 0;
+    transition: all 0.18s cubic-bezier(0.16,1,0.3,1);
+    border-radius: 0 10px 10px 0;
   }
   .sidebar-item:hover {
-    background: color-mix(in srgb, var(--neon) 6%, transparent);
+    background: color-mix(in srgb, var(--neon) 7%, transparent);
     border-left-color: color-mix(in srgb, var(--neon) 50%, transparent);
     color: var(--text-primary);
+    transform: translateX(2px);
   }
   .sidebar-item-active {
-    background: color-mix(in srgb, var(--neon) 10%, transparent);
+    background: color-mix(in srgb, var(--neon) 12%, transparent);
     border-left: 3px solid var(--neon);
     color: var(--neon);
   }
   .dark .sidebar-item-active { color: var(--neon); }
   .light .sidebar-item-active { color: #007a32; }
 
-  /* ─── GLOW UTILITIES (dark-only) ─── */
+  /* ─── GLOW UTILITIES ─── */
   .dark .logo-glow {
     filter: drop-shadow(0 0 16px rgba(0,230,118,0.7)) drop-shadow(0 0 32px rgba(0,230,118,0.3));
   }
@@ -202,13 +354,8 @@
     filter: drop-shadow(0 0 8px rgba(0,180,70,0.4));
   }
 
-  .glow-text {
-    color: var(--neon);
-  }
-  .dark .glow-text {
-    text-shadow: 0 0 12px rgba(0,230,118,0.5);
-  }
-
+  .glow-text { color: var(--neon); }
+  .dark .glow-text { text-shadow: 0 0 12px rgba(0,230,118,0.5); }
   .dark .glow-card { box-shadow: 0 0 0 1px rgba(0,230,118,0.05) inset, 0 4px 24px rgba(0,0,0,0.4); }
 
   /* ─── WATERMARK ─── */
@@ -232,7 +379,6 @@
       linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
     background-size: 40px 40px;
   }
-  .dark .grid-bg { opacity: 1; }
 
   /* ─── NUMBERS ─── */
   .number-display {
@@ -243,8 +389,51 @@
   .pulse-green {
     animation: pulse-green 2s ease-in-out infinite;
   }
-  @keyframes pulse-green {
-    0%, 100% { box-shadow: 0 0 10px color-mix(in srgb, var(--neon) 30%, transparent); }
-    50% { box-shadow: 0 0 25px color-mix(in srgb, var(--neon) 60%, transparent); }
+
+  /* ─── KPI CARD hover lift ─── */
+  .kpi-card {
+    transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s, border-color 0.22s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-3px);
+  }
+
+  /* ─── Image upload zone ─── */
+  .upload-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: 14px;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--neon);
+    background: color-mix(in srgb, var(--neon) 4%, transparent);
+  }
+
+  /* ─── Password strength bar ─── */
+  .strength-bar {
+    height: 3px;
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(0.16,1,0.3,1), background-color 0.3s;
+  }
+
+  /* ─── Animated gradient text ─── */
+  .gradient-text-animated {
+    background: linear-gradient(90deg, var(--neon), #40c4ff, var(--neon));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gp-gradient-shift 3s linear infinite;
+  }
+
+  /* ─── Page enter animation wrapper ─── */
+  .page-enter {
+    animation: gp-fade-in-up 0.45s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  /* ─── Notification dot pulse ─── */
+  .notif-dot {
+    animation: gp-neon-pulse 1.8s ease-in-out infinite;
   }
 }
