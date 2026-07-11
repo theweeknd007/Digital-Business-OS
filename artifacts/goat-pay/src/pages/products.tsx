@@ -14,6 +14,8 @@ import {
   DollarSign, FileText, Video, Image as ImageIcon,
   TrendingUp, TrendingDown, Layers, RefreshCw,
   Smartphone, Box, ChevronDown,
+  Settings2, Palette, Shield, Globe, MousePointerClick,
+  LayoutTemplate, Maximize2, AlignLeft,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
@@ -95,15 +97,18 @@ function ContextMenu({ actions, isDark, neon }: {
   );
 }
 
-/* ─── Links & QR Modal ─── */
+/* ─── Links & Pixel Modal ─── */
 function LinksModal({ product, open, onClose, isDark, neon }: {
   product: { id: number; name: string } | null;
   open: boolean; onClose: () => void; isDark: boolean; neon: string;
 }) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [pixels, setPixels] = useState({ meta: "", google: "", tiktok: "" });
+  const [pixelSaved, setPixelSaved] = useState(false);
   const textPrimary = isDark ? "#fff" : "#111";
   const textMuted = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
   const inputBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)";
+  const inputBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
   const borderColor = isDark ? "rgba(0,230,118,0.15)" : "rgba(0,0,0,0.08)";
 
   if (!product) return null;
@@ -121,23 +126,41 @@ function LinksModal({ product, open, onClose, isDark, neon }: {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const savePixels = () => {
+    setPixelSaved(true);
+    setTimeout(() => setPixelSaved(false), 2500);
+  };
+
+  const inputStyle: React.CSSProperties = {
+    background: inputBg,
+    border: `1px solid ${inputBorder}`,
+    color: textPrimary,
+    borderRadius: 10,
+    padding: "9px 12px",
+    fontSize: 13,
+    outline: "none",
+    width: "100%",
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         style={{
           background: isDark ? "hsl(135,25%,5%)" : "#fff",
           border: `1px solid ${borderColor}`,
-          color: textPrimary, maxWidth: 480,
+          color: textPrimary, maxWidth: 520,
+          maxHeight: "90vh", overflowY: "auto",
         }}>
         <DialogHeader>
           <DialogTitle style={{ color: textPrimary }} className="flex items-center gap-2">
             <Link2 className="w-5 h-5" style={{ color: neon }} />
-            Links & QR Code
+            Links & Pixel
           </DialogTitle>
           <p className="text-sm mt-0.5" style={{ color: textMuted }}>{product.name}</p>
         </DialogHeader>
 
         <div className="space-y-3 mt-2">
+          {/* Links */}
           {links.map((l) => (
             <div key={l.label}>
               <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: textMuted }}>
@@ -161,44 +184,306 @@ function LinksModal({ product, open, onClose, isDark, neon }: {
             </div>
           ))}
 
-          {/* QR Code placeholder */}
+          {/* QR Code */}
           <div>
             <label className="text-xs font-bold uppercase tracking-wider block mb-1.5" style={{ color: textMuted }}>
               QR Code — Checkout
             </label>
-            <div className="rounded-2xl p-6 flex flex-col items-center gap-3"
+            <div className="rounded-2xl p-4 flex items-center gap-4"
               style={{ background: inputBg, border: `1px solid ${borderColor}` }}>
-              <div className="w-40 h-40 rounded-xl flex items-center justify-center relative overflow-hidden"
+              <div className="w-28 h-28 rounded-xl flex items-center justify-center relative overflow-hidden shrink-0"
                 style={{ background: isDark ? "rgba(0,230,118,0.05)" : "rgba(0,168,79,0.05)", border: `1px solid ${neon}30` }}>
-                {/* QR Code visual placeholder */}
-                <div className="grid grid-cols-7 gap-0.5 p-2">
+                <div className="grid grid-cols-7 gap-0.5 p-1.5">
                   {Array.from({ length: 49 }).map((_, i) => {
-                    const isCorner = [0,1,2,3,4,5,6,7,13,14,20,21,27,28,34,35,41,42,43,44,45,46,47,48].includes(i)
-                      || [0,6,42,48].includes(i);
-                    const filled = Math.random() > 0.45 || isCorner;
-                    return (
-                      <div key={i} className="w-3.5 h-3.5 rounded-sm"
-                        style={{ background: filled ? (isDark ? neon : neon) : "transparent", opacity: filled ? (isCorner ? 1 : 0.7) : 0 }} />
-                    );
+                    const corner = [0,1,2,3,4,5,6,7,13,14,20,21,27,28,34,35,41,42,43,44,45,46,47,48].includes(i);
+                    const filled = Math.random() > 0.45 || corner;
+                    return <div key={i} className="w-3 h-3 rounded-sm"
+                      style={{ background: filled ? neon : "transparent", opacity: filled ? (corner ? 1 : 0.7) : 0 }} />;
                   })}
                 </div>
-                <QrCode className="w-16 h-16 absolute opacity-10" style={{ color: neon }} />
+                <QrCode className="w-12 h-12 absolute opacity-10" style={{ color: neon }} />
               </div>
-              <div className="flex gap-2">
-                <button className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
+              <div className="flex flex-col gap-2 flex-1">
+                <p className="text-xs" style={{ color: textMuted }}>
+                  ID: <strong style={{ color: neon }}>#{product.id.toString().padStart(7, "0")}</strong>
+                </p>
+                <button className="px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 w-fit"
                   style={{ background: `${neon}15`, color: neon, border: `1px solid ${neon}30` }}>
-                  <QrCode className="w-3.5 h-3.5" /> Baixar QR
+                  <QrCode className="w-3 h-3" /> Baixar QR
                 </button>
-                <button className="px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
-                  style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-                    color: textMuted, border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}` }}>
-                  <Copy className="w-3.5 h-3.5" /> Copiar
+                <button className="px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 w-fit"
+                  style={{ background: inputBg, color: textMuted, border: `1px solid ${inputBorder}` }}>
+                  <Copy className="w-3 h-3" /> Copiar PNG
                 </button>
               </div>
-              <p className="text-xs text-center" style={{ color: textMuted }}>
-                ID do produto: <strong style={{ color: neon }}>#{product.id.toString().padStart(7, "0")}</strong>
-              </p>
             </div>
+          </div>
+
+          {/* ─── Pixel Tracking ─── */}
+          <div className="rounded-2xl p-4 space-y-4"
+            style={{ background: isDark ? "rgba(64,196,255,0.04)" : "rgba(0,100,200,0.03)", border: `1px solid ${isDark ? "rgba(64,196,255,0.2)" : "rgba(0,100,200,0.12)"}` }}>
+            <div className="flex items-center gap-2">
+              <MousePointerClick className="w-4 h-4" style={{ color: "#40c4ff" }} />
+              <span className="text-sm font-bold" style={{ color: textPrimary }}>Rastreamento & Pixels</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto"
+                style={{ background: "rgba(64,196,255,0.15)", color: "#40c4ff" }}>PRO</span>
+            </div>
+
+            {[
+              { key: "meta" as const, label: "Meta Pixel ID (Facebook/Instagram)", placeholder: "Ex: 1234567890123456", icon: "📘" },
+              { key: "google" as const, label: "Google Analytics (GA4)", placeholder: "Ex: G-XXXXXXXXXX", icon: "📊" },
+              { key: "tiktok" as const, label: "TikTok Pixel ID", placeholder: "Ex: C3A4B5D6E7F8G9H0", icon: "🎵" },
+            ].map((field) => (
+              <div key={field.key}>
+                <label className="flex items-center gap-1.5 text-xs font-semibold mb-1.5" style={{ color: textMuted }}>
+                  <span>{field.icon}</span> {field.label}
+                </label>
+                <input
+                  type="text"
+                  placeholder={field.placeholder}
+                  value={pixels[field.key]}
+                  onChange={(e) => setPixels((p) => ({ ...p, [field.key]: e.target.value }))}
+                  style={inputStyle}
+                  onFocus={(e) => (e.target.style.border = "1px solid rgba(64,196,255,0.5)")}
+                  onBlur={(e) => (e.target.style.border = `1px solid ${inputBorder}`)} />
+              </div>
+            ))}
+
+            <button
+              onClick={savePixels}
+              className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
+              style={{
+                background: pixelSaved ? `${neon}20` : "rgba(64,196,255,0.12)",
+                color: pixelSaved ? neon : "#40c4ff",
+                border: `1px solid ${pixelSaved ? neon + "40" : "rgba(64,196,255,0.3)"}`,
+              }}>
+              {pixelSaved ? <><Check className="w-4 h-4" /> Pixels salvos!</> : <><Globe className="w-4 h-4" /> Salvar Pixels</>}
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ─── Checkout Customizer Modal ─── */
+const CHECKOUT_LAYOUTS = [
+  { id: "one-step", label: "1 Etapa", desc: "Tudo em uma página", icon: AlignLeft },
+  { id: "two-step", label: "2 Etapas", desc: "Dados → Pagamento", icon: LayoutTemplate },
+  { id: "popup", label: "Pop-up", desc: "Checkout flutuante", icon: Maximize2 },
+] as const;
+
+const COLOR_PRESETS = [
+  "#00e676", "#40c4ff", "#e040fb", "#ffab40", "#f44336", "#fff176",
+];
+
+const GUARANTEE_OPTIONS = [
+  { days: 7, label: "7 dias" },
+  { days: 15, label: "15 dias" },
+  { days: 30, label: "30 dias" },
+  { days: null, label: "Sem garantia" },
+];
+
+function CheckoutCustomizerModal({ product, open, onClose, isDark, neon }: {
+  product: { id: number; name: string } | null;
+  open: boolean; onClose: () => void; isDark: boolean; neon: string;
+}) {
+  const [layout, setLayout] = useState<string>("one-step");
+  const [color, setColor] = useState(neon);
+  const [fields, setFields] = useState({ cpf: true, phone: true, address: false, terms: true });
+  const [guarantee, setGuarantee] = useState<number | null>(7);
+  const [orderBump, setOrderBump] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const { toast } = useToast();
+
+  if (!product) return null;
+
+  const textPrimary = isDark ? "#fff" : "#111";
+  const textMuted = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
+  const inputBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)";
+  const borderColor = isDark ? "rgba(0,230,118,0.15)" : "rgba(0,0,0,0.08)";
+  const inputBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+
+  function handleSave() {
+    setSaved(true);
+    toast({ title: "✅ Checkout salvo!", description: `Configurações aplicadas para "${product!.name}"` });
+    setTimeout(() => { setSaved(false); onClose(); }, 1500);
+  }
+
+  function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+    return (
+      <button
+        onClick={onChange}
+        className="w-10 h-6 rounded-full transition-all relative shrink-0"
+        style={{ background: checked ? neon : isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)" }}>
+        <span className="absolute top-0.5 transition-all w-5 h-5 rounded-full bg-white shadow"
+          style={{ left: checked ? "calc(100% - 22px)" : "2px" }} />
+      </button>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent
+        style={{
+          background: isDark ? "hsl(135,25%,5%)" : "#fff",
+          border: `1px solid ${borderColor}`,
+          color: textPrimary, maxWidth: 560,
+          maxHeight: "92vh", overflowY: "auto",
+        }}>
+        <DialogHeader>
+          <DialogTitle style={{ color: textPrimary }} className="flex items-center gap-2">
+            <Settings2 className="w-5 h-5" style={{ color: neon }} />
+            Customizar Checkout
+          </DialogTitle>
+          <p className="text-sm mt-0.5" style={{ color: textMuted }}>{product.name}</p>
+        </DialogHeader>
+
+        <div className="space-y-5 mt-2">
+
+          {/* ── Layout ── */}
+          <section>
+            <label className="text-xs font-bold uppercase tracking-wider block mb-3" style={{ color: textMuted }}>
+              Layout do Checkout
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {CHECKOUT_LAYOUTS.map((opt) => {
+                const Icon = opt.icon;
+                const active = layout === opt.id;
+                return (
+                  <button key={opt.id} onClick={() => setLayout(opt.id)}
+                    className="flex flex-col items-center gap-2 p-4 rounded-2xl transition-all"
+                    style={{
+                      background: active ? `${neon}12` : inputBg,
+                      border: `1.5px solid ${active ? neon + "70" : inputBorder}`,
+                    }}>
+                    <Icon className="w-5 h-5" style={{ color: active ? neon : textMuted }} />
+                    <div className="text-xs font-bold" style={{ color: active ? neon : textPrimary }}>{opt.label}</div>
+                    <div className="text-[10px] text-center" style={{ color: textMuted }}>{opt.desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ── Cor Principal ── */}
+          <section>
+            <label className="text-xs font-bold uppercase tracking-wider block mb-3" style={{ color: textMuted }}>
+              Cor Principal
+            </label>
+            <div className="flex items-center gap-3 flex-wrap">
+              {COLOR_PRESETS.map((c) => (
+                <button key={c} onClick={() => setColor(c)}
+                  className="w-8 h-8 rounded-full transition-all relative"
+                  style={{ background: c, boxShadow: color === c ? `0 0 0 3px ${isDark ? "#000" : "#fff"}, 0 0 0 5px ${c}` : "none" }}>
+                  {color === c && <Check className="w-3.5 h-3.5 absolute inset-0 m-auto" style={{ color: c === "#fff176" ? "#000" : "#000" }} />}
+                </button>
+              ))}
+              <div className="flex items-center gap-2">
+                <div className="w-px h-6" style={{ background: inputBorder }} />
+                <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: textMuted }}>
+                  <Palette className="w-3.5 h-3.5" />
+                  Personalizada
+                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)}
+                    className="w-7 h-7 rounded cursor-pointer border-none outline-none"
+                    style={{ background: "transparent" }} />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Campos do Formulário ── */}
+          <section>
+            <label className="text-xs font-bold uppercase tracking-wider block mb-3" style={{ color: textMuted }}>
+              Campos do Formulário
+            </label>
+            <div className="space-y-2">
+              {([
+                { key: "cpf" as const, label: "CPF / CNPJ", desc: "Obrigatório para nota fiscal" },
+                { key: "phone" as const, label: "Telefone / WhatsApp", desc: "Para contato pós-venda" },
+                { key: "address" as const, label: "Endereço completo", desc: "Para produtos físicos" },
+                { key: "terms" as const, label: "Aceite dos Termos", desc: "Checkbox de conformidade" },
+              ] as const).map((field) => (
+                <div key={field.key} className="flex items-center justify-between px-4 py-3 rounded-xl"
+                  style={{ background: inputBg, border: `1px solid ${inputBorder}` }}>
+                  <div>
+                    <div className="text-sm font-medium" style={{ color: textPrimary }}>{field.label}</div>
+                    <div className="text-xs" style={{ color: textMuted }}>{field.desc}</div>
+                  </div>
+                  <Toggle checked={fields[field.key]} onChange={() => setFields((f) => ({ ...f, [field.key]: !f[field.key] }))} />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Garantia ── */}
+          <section>
+            <label className="text-xs font-bold uppercase tracking-wider block mb-3" style={{ color: textMuted }}>
+              Selo de Garantia
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {GUARANTEE_OPTIONS.map((opt) => {
+                const active = guarantee === opt.days;
+                return (
+                  <button key={String(opt.days)} onClick={() => setGuarantee(opt.days)}
+                    className="flex flex-col items-center gap-1.5 py-3 rounded-xl transition-all"
+                    style={{
+                      background: active ? `${neon}12` : inputBg,
+                      border: `1.5px solid ${active ? neon + "60" : inputBorder}`,
+                    }}>
+                    {opt.days && <Shield className="w-4 h-4" style={{ color: active ? neon : textMuted }} />}
+                    <span className="text-xs font-bold" style={{ color: active ? neon : textPrimary }}>{opt.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {guarantee && (
+              <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: textMuted }}>
+                <Shield className="w-3 h-3" style={{ color: neon }} />
+                Selos de garantia aumentam conversão em até 18%
+              </p>
+            )}
+          </section>
+
+          {/* ── Order Bump ── */}
+          <section className="rounded-2xl p-4"
+            style={{ background: inputBg, border: `1px solid ${inputBorder}` }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-bold" style={{ color: textPrimary }}>Order Bump</div>
+                <div className="text-xs mt-0.5" style={{ color: textMuted }}>Oferta adicional exibida antes do pagamento</div>
+              </div>
+              <Toggle checked={orderBump} onChange={() => setOrderBump((v) => !v)} />
+            </div>
+            {orderBump && (
+              <div className="mt-3 pt-3" style={{ borderTop: `1px solid ${inputBorder}` }}>
+                <p className="text-xs" style={{ color: textMuted }}>
+                  Configure um produto complementar para oferecer no checkout com desconto exclusivo.
+                </p>
+                <button className="mt-2 text-xs font-semibold px-3 py-1.5 rounded-lg"
+                  style={{ background: `${neon}15`, color: neon, border: `1px solid ${neon}30` }}>
+                  + Selecionar produto
+                </button>
+              </div>
+            )}
+          </section>
+
+          {/* ── Save ── */}
+          <div className="flex gap-3">
+            <button onClick={onClose}
+              className="flex-1 py-3 rounded-xl text-sm font-semibold"
+              style={{ border: `1px solid ${inputBorder}`, color: textMuted, background: inputBg }}>
+              Cancelar
+            </button>
+            <button onClick={handleSave}
+              className="flex-1 py-3 rounded-xl text-sm font-extrabold flex items-center justify-center gap-2"
+              style={{
+                background: saved ? `${neon}30` : `linear-gradient(135deg, ${neon}, color-mix(in srgb, ${neon} 75%, black))`,
+                color: saved ? neon : "#000",
+                boxShadow: saved ? "none" : `0 0 20px ${neon}40`,
+              }}>
+              {saved ? <><Check className="w-4 h-4" /> Salvo!</> : "Salvar Checkout"}
+            </button>
           </div>
         </div>
       </DialogContent>
@@ -352,6 +637,7 @@ export default function Products() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [filterOpen, setFilterOpen] = useState(false);
   const [linksModal, setLinksModal] = useState<{ id: number; name: string } | null>(null);
+  const [checkoutModal, setCheckoutModal] = useState<{ id: number; name: string } | null>(null);
   const [starred, setStarred] = useState<Set<number>>(new Set());
 
   function openCreate() {
@@ -403,8 +689,8 @@ export default function Products() {
     const isStarred = starred.has(p.id);
 
     const menuActions: ContextMenuAction[] = [
-      { label: "Customizar Checkout", icon: <ShoppingCart className="w-4 h-4" />, onClick: () => toast({ title: "Abrindo editor de checkout..." }) },
-      { label: "Links & QR Code", icon: <Link2 className="w-4 h-4" />, onClick: () => setLinksModal({ id: p.id, name: p.name }) },
+      { label: "Customizar Checkout", icon: <Settings2 className="w-4 h-4" />, onClick: () => setCheckoutModal({ id: p.id, name: p.name }) },
+      { label: "Links & Pixel", icon: <Link2 className="w-4 h-4" />, onClick: () => setLinksModal({ id: p.id, name: p.name }) },
       { label: "Duplicar produto", icon: <Copy className="w-4 h-4" />, onClick: () => handleDuplicate(p) },
       { label: "Arquivar", icon: <Archive className="w-4 h-4" />, onClick: () => toast({ title: "Produto arquivado." }) },
       { label: "Editar produto", icon: <Pencil className="w-4 h-4" />, onClick: () => openEdit(p) },
@@ -658,6 +944,11 @@ export default function Products() {
       <LinksModal
         product={linksModal} open={!!linksModal}
         onClose={() => setLinksModal(null)}
+        isDark={isDark} neon={neon} />
+
+      <CheckoutCustomizerModal
+        product={checkoutModal} open={!!checkoutModal}
+        onClose={() => setCheckoutModal(null)}
         isDark={isDark} neon={neon} />
     </div>
   );
