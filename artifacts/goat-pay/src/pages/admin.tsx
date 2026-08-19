@@ -46,7 +46,12 @@ interface AdminWithdrawal {
   pixKey: string; notes: string | null; createdAt: string;
 }
 
-type Tab = "stats" | "users" | "withdrawals";
+interface AdminProduct {
+  id: number; ownerId?: number; name: string; type: string; price: number;
+  status: string; coverUrl?: string; fileName?: string; createdAt: string;
+}
+
+type Tab = "stats" | "users" | "products" | "withdrawals";
 
 export default function AdminPage() {
   const { user, isAdmin } = useAuth();
@@ -82,6 +87,13 @@ export default function AdminPage() {
     refetchInterval: 15000,
   });
 
+  const productsQ = useQuery<AdminProduct[]>({
+    queryKey: ["admin", "products"],
+    queryFn: () => adminFetch("/admin/products"),
+    enabled: isAdmin && tab === "products",
+    refetchInterval: 15000,
+  });
+
   const toggleUser = useMutation({
     mutationFn: ({ id, active }: { id: number; active: boolean }) =>
       adminFetch(`/admin/users/${id}`, { method: "PATCH", body: JSON.stringify({ active }) }),
@@ -108,6 +120,13 @@ export default function AdminPage() {
     onError: (e: Error) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
   });
 
+  const reviewProduct = useMutation({
+    mutationFn: ({ id, decision }: { id: number; decision: "approve" | "reject" }) =>
+      adminFetch(`/admin/products/${id}/review`, { method: "POST", body: JSON.stringify({ decision }) }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin", "products"] }); toast({ title: "Produto revisado" }); },
+    onError: (e: Error) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
+  });
+
   if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center">
@@ -121,6 +140,7 @@ export default function AdminPage() {
   const TABS: { id: Tab; label: string; icon: React.FC<any> }[] = [
     { id: "stats", label: "Visão Geral", icon: BarChart2 },
     { id: "users", label: "Usuários", icon: Users },
+    { id: "products", label: "Produtos", icon: Package },
     { id: "withdrawals", label: "Saques", icon: DollarSign },
   ];
 
@@ -330,6 +350,43 @@ export default function AdminPage() {
                     ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ─── WITHDRAWALS TAB ─── */}
+      {tab === "products" && (
+        <div className="gp-card overflow-hidden">
+          <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: `1px solid ${borderColor}` }}>
+            <div>
+              <h2 className="font-bold text-sm" style={{ color: textPrimary }}>Moderação de Produtos</h2>
+              <p className="text-xs mt-1" style={{ color: textMuted }}>Nenhum produto pode vender antes da aprovação.</p>
+            </div>
+            <span className="text-xs font-bold" style={{ color: "#ffb700" }}>
+              {productsQ.data?.filter((p) => p.status === "pending_approval").length ?? "..."} pendentes
+            </span>
+          </div>
+          <div className="divide-y" style={{ borderColor }}>
+            {(productsQ.data ?? []).map((p) => (
+              <div key={p.id} className="flex flex-wrap items-center gap-4 px-5 py-4">
+                {p.coverUrl ? <img src={`${BASE}/api/storage${p.coverUrl}`} alt="" className="h-14 w-20 rounded-xl object-cover" /> : <div className="h-14 w-20 rounded-xl" style={{ background: inputBg }} />}
+                <div className="min-w-[180px] flex-1">
+                  <div className="font-bold text-sm" style={{ color: textPrimary }}>{p.name}</div>
+                  <div className="text-xs mt-1" style={{ color: textMuted }}>Criador #{p.ownerId ?? "—"} · {formatCurrency(p.price)} · {p.fileName ?? "sem ficheiro"}</div>
+                </div>
+                <span className="text-xs font-bold rounded-full px-2.5 py-1" style={{
+                  background: p.status === "pending_approval" ? "rgba(255,183,0,.12)" : `${neon}15`,
+                  color: p.status === "pending_approval" ? "#ffb700" : neon,
+                }}>{p.status === "pending_approval" ? "Aguardando" : p.status}</span>
+                {p.status === "pending_approval" && (
+                  <div className="flex gap-2">
+                    <button onClick={() => reviewProduct.mutate({ id: p.id, decision: "approve" })} className="rounded-lg px-3 py-2 text-xs font-bold" style={{ background: `${neon}15`, color: neon }}>Aprovar</button>
+                    <button onClick={() => reviewProduct.mutate({ id: p.id, decision: "reject" })} className="rounded-lg px-3 py-2 text-xs font-bold" style={{ background: "rgba(244,67,54,.1)", color: "#f44336" }}>Rejeitar</button>
+                  </div>
+                )}
+              </div>
+            ))}
+            {!productsQ.isLoading && !(productsQ.data ?? []).length && <div className="px-5 py-12 text-center text-sm" style={{ color: textMuted }}>Nenhum produto para revisar.</div>}
           </div>
         </div>
       )}

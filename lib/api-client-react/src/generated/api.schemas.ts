@@ -48,6 +48,25 @@ export interface WalletSummary {
   total: number;
 }
 
+export type ProductDeliveryType = typeof ProductDeliveryType[keyof typeof ProductDeliveryType];
+
+
+export const ProductDeliveryType = {
+  internal: 'internal',
+  external: 'external',
+} as const;
+
+export interface ProductMaterialInput {
+  id?: number;
+  objectPath?: string;
+  name: string;
+  contentType: string;
+  fileSize: number;
+  externalUrl?: string;
+}
+
+export type ProductMaterial = ProductMaterialInput & { [key: string]: unknown } & Required<Pick<ProductMaterialInput & { [key: string]: unknown }, 'id'>>;
+
 export interface Product {
   id: number;
   name: string;
@@ -58,8 +77,33 @@ export interface Product {
   sales: number;
   revenue: number;
   imageUrl?: string;
+  ownerId?: number;
+  coverUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileContentType?: string;
+  fileSize?: number;
+  currency?: string;
+  deliveryType?: ProductDeliveryType;
+  externalDeliveryUrl?: string;
+  externalAccessUrl?: string;
+  /** @maxItems 6 */
+  materials?: ProductMaterial[];
+  approvalNotes?: string;
+  approvedAt?: string;
+  approvedBy?: number;
+  whopProductId?: string;
+  whopPlanId?: string;
   createdAt: string;
 }
+
+export type ProductInputDeliveryType = typeof ProductInputDeliveryType[keyof typeof ProductInputDeliveryType];
+
+
+export const ProductInputDeliveryType = {
+  internal: 'internal',
+  external: 'external',
+} as const;
 
 export interface ProductInput {
   /** @minLength 1 */
@@ -69,7 +113,26 @@ export interface ProductInput {
   price: number;
   status?: string;
   imageUrl?: string;
+  coverUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileContentType?: string;
+  fileSize?: number;
+  currency?: string;
+  deliveryType?: ProductInputDeliveryType;
+  externalDeliveryUrl?: string;
+  externalAccessUrl?: string;
+  /** @maxItems 6 */
+  materials?: ProductMaterialInput[];
 }
+
+export type ProductUpdateDeliveryType = typeof ProductUpdateDeliveryType[keyof typeof ProductUpdateDeliveryType];
+
+
+export const ProductUpdateDeliveryType = {
+  internal: 'internal',
+  external: 'external',
+} as const;
 
 export interface ProductUpdate {
   name?: string;
@@ -78,6 +141,58 @@ export interface ProductUpdate {
   price?: number;
   status?: string;
   imageUrl?: string;
+  coverUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileContentType?: string;
+  fileSize?: number;
+  currency?: string;
+  deliveryType?: ProductUpdateDeliveryType;
+  externalDeliveryUrl?: string;
+  externalAccessUrl?: string;
+  /** @maxItems 6 */
+  materials?: ProductMaterialInput[];
+}
+
+export type ProductReviewInputDecision = typeof ProductReviewInputDecision[keyof typeof ProductReviewInputDecision];
+
+
+export const ProductReviewInputDecision = {
+  approve: 'approve',
+  reject: 'reject',
+} as const;
+
+export interface ProductReviewInput {
+  decision: ProductReviewInputDecision;
+  notes?: string;
+}
+
+export interface GPStorageUploadUrlBody {
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  contentType: string;
+}
+
+export type GPStorageUploadUrlResponseMetadata = {
+  name: string;
+  size: number;
+  contentType: string;
+};
+
+export interface GPStorageUploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+  metadata: GPStorageUploadUrlResponseMetadata;
+}
+
+export interface CheckoutInput {
+  productId: number;
+}
+
+export interface CheckoutResponse {
+  purchaseUrl: string;
+  checkoutId: string;
 }
 
 export interface Sale {

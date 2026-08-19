@@ -15,6 +15,8 @@ tags:
   - name: wallet
   - name: withdrawals
   - name: affiliates
+  - name: storage
+  - name: admin
 
 paths:
   /healthz:
@@ -188,6 +190,80 @@ paths:
       responses:
         "204":
           description: Deleted
+
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GPStorageUploadUrlBody"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GPStorageUploadUrlResponse"
+
+  /admin/products:
+    get:
+      operationId: listAdminProducts
+      tags: [admin]
+      responses:
+        "200":
+          description: All products for moderation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /admin/products/{id}/review:
+    post:
+      operationId: reviewProduct
+      tags: [admin]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductReviewInput"
+      responses:
+        "200":
+          description: Product review result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /whop/checkout:
+    post:
+      operationId: createWhopCheckout
+      tags: [products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutInput"
+      responses:
+        "200":
+          description: Hosted Whop checkout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
 
   /sales:
     get:
@@ -442,6 +518,42 @@ components:
           type: number
         imageUrl:
           type: string
+        ownerId:
+          type: integer
+        coverUrl:
+          type: string
+        fileUrl:
+          type: string
+        fileName:
+          type: string
+        fileContentType:
+          type: string
+        fileSize:
+          type: integer
+        currency:
+          type: string
+        deliveryType:
+          type: string
+          enum: [internal, external]
+        externalDeliveryUrl:
+          type: string
+        externalAccessUrl:
+          type: string
+        materials:
+          type: array
+          maxItems: 6
+          items:
+            $ref: "#/components/schemas/ProductMaterial"
+        approvalNotes:
+          type: string
+        approvedAt:
+          type: string
+        approvedBy:
+          type: integer
+        whopProductId:
+          type: string
+        whopPlanId:
+          type: string
         createdAt:
           type: string
 
@@ -462,6 +574,30 @@ components:
           type: string
         imageUrl:
           type: string
+        coverUrl:
+          type: string
+        fileUrl:
+          type: string
+        fileName:
+          type: string
+        fileContentType:
+          type: string
+        fileSize:
+          type: integer
+        currency:
+          type: string
+        deliveryType:
+          type: string
+          enum: [internal, external]
+        externalDeliveryUrl:
+          type: string
+        externalAccessUrl:
+          type: string
+        materials:
+          type: array
+          maxItems: 6
+          items:
+            $ref: "#/components/schemas/ProductMaterialInput"
 
     ProductUpdate:
       type: object
@@ -477,6 +613,110 @@ components:
         status:
           type: string
         imageUrl:
+          type: string
+        coverUrl:
+          type: string
+        fileUrl:
+          type: string
+        fileName:
+          type: string
+        fileContentType:
+          type: string
+        fileSize:
+          type: integer
+        currency:
+          type: string
+        deliveryType:
+          type: string
+          enum: [internal, external]
+        externalDeliveryUrl:
+          type: string
+        externalAccessUrl:
+          type: string
+        materials:
+          type: array
+          maxItems: 6
+          items:
+            $ref: "#/components/schemas/ProductMaterialInput"
+
+    ProductMaterialInput:
+      type: object
+      required: [name, contentType, fileSize]
+      properties:
+        id:
+          type: integer
+        objectPath:
+          type: string
+        name:
+          type: string
+        contentType:
+          type: string
+        fileSize:
+          type: integer
+        externalUrl:
+          type: string
+
+    ProductMaterial:
+      allOf:
+        - $ref: "#/components/schemas/ProductMaterialInput"
+        - type: object
+          required: [id]
+
+    ProductReviewInput:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject]
+        notes:
+          type: string
+
+    GPStorageUploadUrlBody:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+
+    GPStorageUploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath, metadata]
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
+          type: string
+        metadata:
+          type: object
+          required: [name, size, contentType]
+          properties:
+            name:
+              type: string
+            size:
+              type: integer
+            contentType:
+              type: string
+
+    CheckoutInput:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+
+    CheckoutResponse:
+      type: object
+      required: [purchaseUrl, checkoutId]
+      properties:
+        purchaseUrl:
+          type: string
+        checkoutId:
           type: string
 
     Sale:

@@ -13,6 +13,9 @@ export const salesTable = pgTable("sales", {
   paymentMethod: text("payment_method").notNull().default("pix"),
   country: text("country"),
   affiliateId: integer("affiliate_id"),
+  whopPaymentId: text("whop_payment_id").unique(),
+  whopEventId: text("whop_event_id").unique(),
+  buyerUserId: integer("buyer_user_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

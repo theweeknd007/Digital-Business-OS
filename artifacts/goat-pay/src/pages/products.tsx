@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListProducts, useCreateProduct, useUpdateProduct, useDeleteProduct,
-  getListProductsQueryKey,
+  getListProductsQueryKey, useCreateWhopCheckout,
 } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/format";
@@ -34,7 +34,29 @@ const TYPE_COLORS: Record<string, string> = {
 type FormData = {
   name: string; description: string; type: string;
   price: number; status: string;
+  coverUrl?: string; fileUrl?: string; fileName?: string;
+  fileContentType?: string; fileSize?: number;
+  currency?: string; deliveryType?: "internal" | "external";
+  externalDeliveryUrl?: string; externalAccessUrl?: string;
+  materials?: Array<{ id?: number; objectPath?: string; name: string; contentType: string; fileSize: number; externalUrl?: string }>;
 };
+
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+async function uploadProductAsset(file: File) {
+  const token = sessionStorage.getItem("gp_sess");
+  const response = await fetch(`${BASE}/api/storage/uploads/request-url`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type || "application/octet-stream" }),
+  });
+  const payload = await response.json() as { uploadURL?: string; objectPath?: string; error?: string };
+  if (!response.ok || !payload.uploadURL || !payload.objectPath) throw new Error(payload.error ?? "Não foi possível preparar o upload");
+  const upload = await fetch(payload.uploadURL, { method: "PUT", headers: { "Content-Type": file.type || "application/octet-stream" }, body: file });
+  if (!upload.ok) throw new Error("O upload não foi concluído");
+  return { objectPath: payload.objectPath, file };
+}
 
 type ContextMenuAction = { label: string; icon: React.ReactNode; color?: string; onClick: () => void };
 
@@ -105,6 +127,7 @@ function LinksModal({ product, open, onClose, isDark, neon }: {
   const [copied, setCopied] = useState<string | null>(null);
   const [pixels, setPixels] = useState({ meta: "", google: "", tiktok: "" });
   const [pixelSaved, setPixelSaved] = useState(false);
+  const createCheckout = useCreateWhopCheckout();
   const textPrimary = isDark ? "#fff" : "#111";
   const textMuted = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
   const inputBg = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)";
@@ -181,6 +204,17 @@ function LinksModal({ product, open, onClose, isDark, neon }: {
                   {copied === l.url ? "Copiado!" : "Copiar"}
                 </button>
               </div>
+              {l.label === "Link de Checkout" && (
+                <button
+                  onClick={() => createCheckout.mutate({ data: { productId: product.id } }, {
+                    onSuccess: (data) => window.open(data.purchaseUrl, "_blank", "noopener,noreferrer"),
+                  })}
+                  disabled={createCheckout.isPending}
+                  className="mt-2 w-full py-2.5 rounded-xl text-xs font-bold transition-all"
+                  style={{ background: `${neon}15`, color: neon, border: `1px solid ${neon}35` }}>
+                  {createCheckout.isPending ? "A preparar checkout seguro..." : "Abrir checkout real do Whop"}
+                </button>
+              )}
             </div>
           ))}
 
@@ -498,7 +532,11 @@ function ProductModal({ open, onClose, editId, defaultValues, onSubmit, loading,
   loading: boolean; isDark: boolean; neon: string;
 }) {
   const form = useForm<FormData>({ defaultValues });
-  useEffect(() => { if (open) form.reset(defaultValues); }, [open, JSON.stringify(defaultValues)]);
+  const [uploading, setUploading] = useState<"cover" | "file" | null>(null);
+  const [step, setStep] = useState(1);
+  const [materials, setMaterials] = useState<FormData["materials"]>(defaultValues.materials ?? []);
+  const { toast } = useToast();
+  useEffect(() => { if (open) { form.reset(defaultValues); setStep(1); setMaterials(defaultValues.materials ?? []); } }, [open, JSON.stringify(defaultValues)]);
 
   const textPrimary = isDark ? "#fff" : "#111";
   const textMuted = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.45)";
@@ -509,6 +547,46 @@ function ProductModal({ open, onClose, editId, defaultValues, onSubmit, loading,
   const focus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => (e.target.style.border = `1px solid ${neon}60`);
   const blur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => (e.target.style.border = `1px solid ${inputBorder}`);
   const lbl: React.CSSProperties = { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", color: textMuted, marginBottom: 6, textTransform: "uppercase" };
+  async function handleUpload(kind: "cover" | "file", file?: File) {
+    if (!file) return;
+    setUploading(kind);
+    try {
+      const result = await uploadProductAsset(file);
+      if (kind === "cover") form.setValue("coverUrl", result.objectPath);
+      else {
+        form.setValue("fileUrl", result.objectPath);
+        form.setValue("fileName", file.name);
+        form.setValue("fileContentType", file.type || "application/octet-stream");
+        form.setValue("fileSize", file.size);
+      }
+      toast({ title: kind === "cover" ? "Capa carregada" : "Ficheiro carregado", description: "O arquivo foi guardado com segurança." });
+    } catch (error) {
+      toast({ title: "Falha no upload", description: error instanceof Error ? error.message : "Tente novamente", variant: "destructive" });
+    } finally {
+      setUploading(null);
+    }
+  }
+  async function addMaterial(file?: File) {
+    if (!file || (materials?.length ?? 0) >= 6) return;
+    setUploading("file");
+    try {
+      const result = await uploadProductAsset(file);
+      setMaterials((current) => [...(current ?? []), { objectPath: result.objectPath, name: file.name, contentType: file.type || "application/octet-stream", fileSize: file.size }]);
+      toast({ title: "Material adicionado" });
+    } catch (error) {
+      toast({ title: "Falha no upload", description: error instanceof Error ? error.message : "Tente novamente", variant: "destructive" });
+    } finally { setUploading(null); }
+  }
+  function nextStep() {
+    const values = form.getValues();
+    if (step === 1 && (!values.name?.trim() || !values.description?.trim() || !values.coverUrl || !values.price || Number(values.price) < 50)) {
+      toast({ title: "Complete as informações obrigatórias", description: "Capa, título, descrição e preço mínimo de 50 MT são obrigatórios.", variant: "destructive" }); return;
+    }
+    if (step === 2 && values.deliveryType !== "external" && !values.fileUrl) {
+      toast({ title: "Adicione o PDF do E-book", variant: "destructive" }); return;
+    }
+    setStep((current) => Math.min(5, current + 1));
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -516,11 +594,11 @@ function ProductModal({ open, onClose, editId, defaultValues, onSubmit, loading,
         <DialogHeader>
           <DialogTitle style={{ color: textPrimary }} className="flex items-center gap-2">
             <Package className="w-5 h-5" style={{ color: neon }} />
-            {editId !== null ? "Editar Produto" : "Novo Produto"}
+            {editId !== null ? "Editar Produto" : "Novo Produto"} <span className="text-xs font-normal" style={{ color: textMuted }}>· Etapa {step} de 5</span>
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-2">
+        <form onSubmit={(event) => { event.preventDefault(); if (step < 5) nextStep(); else form.handleSubmit((data) => onSubmit({ ...data, materials }))(event); }} className="space-y-4 mt-2">
           {/* Name */}
           <div>
             <label style={lbl}>Nome do produto *</label>
@@ -545,7 +623,8 @@ function ProductModal({ open, onClose, editId, defaultValues, onSubmit, loading,
             <div>
               <label style={lbl}>Status</label>
               <select {...form.register("status")} style={s} onFocus={focus} onBlur={blur}>
-                <option value="active">Ativo</option>
+                <option value="pending_approval">Aguardando aprovação</option>
+                <option value="active">Ativo (admin)</option>
                 <option value="draft">Rascunho</option>
                 <option value="inactive">Inativo</option>
               </select>
@@ -561,6 +640,68 @@ function ProductModal({ open, onClose, editId, defaultValues, onSubmit, loading,
                 style={{ ...s, paddingLeft: 36 }} placeholder="0,00" onFocus={focus} onBlur={blur} />
             </div>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label style={lbl}>Capa do produto *</label>
+              <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed p-3 text-center"
+                style={{ background: inputBg, borderColor: `${neon}45` }}>
+                {form.watch("coverUrl") ? (
+                  <img src={`${BASE}/api/storage${form.watch("coverUrl")}`} alt="Capa do produto" className="h-20 w-full rounded-xl object-cover" />
+                ) : <><ImageIcon className="mb-2 h-6 w-6" style={{ color: neon }} /><span className="text-xs font-semibold" style={{ color: textPrimary }}>Upload da capa</span></>}
+                <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => handleUpload("cover", e.target.files?.[0])} />
+              </label>
+              {uploading === "cover" && <p className="mt-1 text-[11px]" style={{ color: neon }}>A enviar capa...</p>}
+            </div>
+            <div>
+              <label style={lbl}>Ficheiro do produto *</label>
+              <label className="flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed p-3 text-center"
+                style={{ background: inputBg, borderColor: `${neon}45` }}>
+                <FileText className="mb-2 h-6 w-6" style={{ color: neon }} />
+                <span className="max-w-full truncate text-xs font-semibold" style={{ color: textPrimary }}>{form.watch("fileName") ?? "Upload do ficheiro"}</span>
+                <span className="mt-1 text-[10px]" style={{ color: textMuted }}>PDF, ZIP, MP4 ou outro</span>
+                <input type="file" className="hidden" onChange={(e) => handleUpload("file", e.target.files?.[0])} />
+              </label>
+              {uploading === "file" && <p className="mt-1 text-[11px]" style={{ color: neon }}>A enviar ficheiro...</p>}
+            </div>
+          </div>
+
+          {step === 2 && (
+            <div className="rounded-xl p-4 space-y-3" style={{ background: inputBg, border: `1px solid ${borderColor}` }}>
+              <div className="flex items-center justify-between">
+                <div><p className="text-sm font-bold" style={{ color: textPrimary }}>Conteúdo e entrega</p><p className="text-xs mt-1" style={{ color: textMuted }}>Escolha como o comprador terá acesso ao produto.</p></div>
+                <select {...form.register("deliveryType")} style={{ ...s, width: 150 }}><option value="internal">Entrega Interna</option><option value="external">Entrega Externa</option></select>
+              </div>
+              {form.watch("deliveryType") === "external" && <div className="space-y-2"><input {...form.register("externalDeliveryUrl")} style={s} placeholder="URL de entrega" /><input {...form.register("externalAccessUrl")} style={s} placeholder="Link de acesso" /></div>}
+              {form.watch("fileName") && <div className="rounded-xl p-3 text-xs" style={{ background: `${neon}10`, color: textPrimary }}><FileText className="inline w-4 h-4 mr-2" style={{ color: neon }} />{form.watch("fileName")} · {((form.watch("fileSize") ?? 0) / 1024 / 1024).toFixed(2)} MB · {(form.watch("fileContentType") ?? "PDF").split("/").pop()?.toUpperCase()}</div>}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="rounded-xl p-4 space-y-3" style={{ background: inputBg, border: `1px solid ${borderColor}` }}>
+              <div><p className="text-sm font-bold" style={{ color: textPrimary }}>Materiais de Apoio</p><p className="text-xs mt-1" style={{ color: textMuted }}>Adicione até 6 materiais extras para entregar com o E-book.</p></div>
+              {(materials ?? []).map((material, index) => <div key={`${material.objectPath}-${index}`} className="flex items-center gap-3 rounded-xl p-3" style={{ background: `${neon}08` }}><FileText className="w-5 h-5" style={{ color: neon }} /><div className="min-w-0 flex-1"><p className="truncate text-xs font-bold" style={{ color: textPrimary }}>{material.name}</p><p className="text-[11px]" style={{ color: textMuted }}>{(material.fileSize / 1024 / 1024).toFixed(2)} MB · {material.contentType.split("/").pop()?.toUpperCase()}</p></div><button type="button" onClick={() => setMaterials((current) => (current ?? []).filter((_, itemIndex) => itemIndex !== index))} className="p-1.5" style={{ color: "#f44336" }}><Trash2 className="w-4 h-4" /></button></div>)}
+              {(materials?.length ?? 0) < 6 && <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold" style={{ background: `${neon}15`, color: neon }}><Plus className="w-4 h-4" /> Adicionar Primeiro Material<input type="file" className="hidden" onChange={(event) => addMaterial(event.target.files?.[0])} /></label>}
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="rounded-xl p-4 space-y-3" style={{ background: inputBg, border: `1px solid ${borderColor}` }}>
+              <p className="text-sm font-bold" style={{ color: textPrimary }}>Configurações</p>
+              <label style={lbl}>Mercado / Moeda</label>
+              <select {...form.register("currency")} style={s}><option value="MZN">Metical — Moçambique (MZN)</option></select>
+              <p className="text-xs" style={{ color: textMuted }}>Preço mínimo para MZN: 50 MT. O produto ficará ativo após a publicação.</p>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="rounded-xl p-4 space-y-2" style={{ background: inputBg, border: `1px solid ${borderColor}` }}>
+              <p className="text-sm font-bold" style={{ color: textPrimary }}>Revisão</p>
+              <p className="text-xs" style={{ color: textMuted }}>{form.watch("name")} · {form.watch("price")} {form.watch("currency") || "MZN"}</p>
+              <p className="text-xs" style={{ color: textMuted }}>Conteúdo: {form.watch("fileName") || "não definido"} · Materiais: {materials?.length ?? 0}/6</p>
+              <p className="text-xs" style={{ color: textMuted }}>Entrega: {form.watch("deliveryType") === "external" ? "Externa" : "Interna"}</p>
+            </div>
+          )}
 
           {/* Extra fields info */}
           <div className="rounded-xl p-4 space-y-2" style={{ background: isDark ? "rgba(0,230,118,0.04)" : "rgba(0,168,79,0.04)", border: `1px solid ${neon}20` }}>
@@ -597,7 +738,7 @@ function ProductModal({ open, onClose, editId, defaultValues, onSubmit, loading,
                 color: "#000", boxShadow: `0 0 20px ${neon}40`, opacity: loading ? 0.7 : 1,
               }}>
               {loading ? <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> : null}
-              {editId !== null ? "Salvar Alterações" : "Criar Produto"}
+              {step < 5 ? "Próximo" : editId !== null ? "Salvar Alterações" : "Publicar Produto"}
             </button>
           </div>
         </form>
@@ -618,7 +759,9 @@ export default function Products() {
   const inputBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
 
   const STATUS_STYLES: Record<string, { bg: string; text: string; border: string; label: string }> = {
-    active:   { bg: `${neon}15`, text: neon, border: `${neon}40`, label: "Ativo" },
+    active:   { bg: `${neon}15`, text: neon, border: `${neon}40`, label: "Aprovado / Ativo" },
+    pending_approval: { bg: "rgba(255,183,0,0.1)", text: "#ffb700", border: "rgba(255,183,0,0.3)", label: "Aguardando aprovação" },
+    rejected: { bg: "rgba(244,67,54,0.1)", text: "#f44336", border: "rgba(244,67,54,0.3)", label: "Rejeitado" },
     inactive: { bg: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)", text: textMuted, border: inputBorder, label: "Inativo" },
     draft:    { bg: "rgba(255,183,0,0.1)", text: "#ffb700", border: "rgba(255,183,0,0.3)", label: "Rascunho" },
   };
@@ -632,7 +775,7 @@ export default function Products() {
 
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [editDefaults, setEditDefaults] = useState<FormData>({ name: "", description: "", type: "digital", price: 0, status: "active" });
+  const [editDefaults, setEditDefaults] = useState<FormData>({ name: "", description: "", type: "digital", price: 0, status: "pending_approval" });
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -642,20 +785,20 @@ export default function Products() {
 
   function openCreate() {
     setEditId(null);
-    setEditDefaults({ name: "", description: "", type: "digital", price: 0, status: "active" });
+    setEditDefaults({ name: "", description: "", type: "digital", price: 0, status: "pending_approval" });
     setOpen(true);
   }
 
   function openEdit(p: NonNullable<typeof products>[0]) {
     setEditId(p.id);
-    setEditDefaults({ name: p.name, description: p.description ?? "", type: p.type, price: p.price, status: p.status });
+    setEditDefaults({ name: p.name, description: p.description ?? "", type: p.type, price: p.price, status: p.status, coverUrl: p.coverUrl, fileUrl: p.fileUrl, fileName: p.fileName, fileContentType: p.fileContentType, fileSize: p.fileSize });
     setOpen(true);
   }
 
   function onSubmit(data: FormData) {
     const inv = () => queryClient.invalidateQueries({ queryKey: getListProductsQueryKey() });
     const opts = {
-      onSuccess: () => { inv(); setOpen(false); toast({ title: editId !== null ? "✅ Produto atualizado" : "✅ Produto criado com sucesso!" }); },
+       onSuccess: () => { inv(); setOpen(false); toast({ title: editId !== null ? "Produto atualizado" : "Produto enviado para aprovação", description: editId === null ? "O admin precisa aprovar antes de vender." : undefined }); },
     };
     if (editId !== null) updateProduct.mutate({ id: editId, data: { ...data, price: Number(data.price) } }, opts);
     else createProduct.mutate({ data: { ...data, price: Number(data.price) } }, opts);
@@ -709,9 +852,9 @@ export default function Products() {
           onMouseLeave={(e) => (e.currentTarget.style.borderColor = borderColor)}>
 
           {/* Thumbnail */}
-          <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden"
+           <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 relative overflow-hidden"
             style={{ background: `${typeColor}12`, border: `1px solid ${typeColor}30` }}>
-            <Package className="w-6 h-6" style={{ color: typeColor }} />
+             {p.coverUrl ? <img src={`${BASE}/api/storage${p.coverUrl}`} alt="" className="h-full w-full object-cover" /> : <Package className="w-6 h-6" style={{ color: typeColor }} />}
           </div>
 
           {/* Info */}
@@ -782,7 +925,7 @@ export default function Products() {
         {/* Cover */}
         <div className="h-36 flex items-center justify-center relative"
           style={{ background: `linear-gradient(135deg, ${typeColor}18, ${typeColor}06)` }}>
-          <Package className="w-12 h-12" style={{ color: typeColor, opacity: 0.5 }} />
+           {p.coverUrl ? <img src={`${BASE}/api/storage${p.coverUrl}`} alt="" className="h-full w-full object-cover" /> : <Package className="w-12 h-12" style={{ color: typeColor, opacity: 0.5 }} />}
           <div className="absolute top-2.5 left-2.5">
             <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
               style={{ background: st.bg, color: st.text, border: `1px solid ${st.border}` }}>

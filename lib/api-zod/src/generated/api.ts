@@ -68,6 +68,10 @@ export const ListProductsQueryParams = zod.object({
   "status": zod.coerce.string().optional()
 })
 
+export const listProductsResponseMaterialsMax = 6;
+
+
+
 export const ListProductsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -78,11 +82,38 @@ export const ListProductsResponseItem = zod.object({
   "sales": zod.number(),
   "revenue": zod.number(),
   "imageUrl": zod.string().optional(),
+  "ownerId": zod.number().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+}).and(zod.object({
+
+}).passthrough())).max(listProductsResponseMaterialsMax).optional(),
+  "approvalNotes": zod.string().optional(),
+  "approvedAt": zod.string().optional(),
+  "approvedBy": zod.number().optional(),
+  "whopProductId": zod.string().optional(),
+  "whopPlanId": zod.string().optional(),
   "createdAt": zod.string()
 })
 export const ListProductsResponse = zod.array(ListProductsResponseItem)
 
 
+
+export const createProductBodyMaterialsMax = 6;
 
 
 
@@ -92,8 +123,29 @@ export const CreateProductBody = zod.object({
   "type": zod.string(),
   "price": zod.number(),
   "status": zod.string().optional(),
-  "imageUrl": zod.string().optional()
+  "imageUrl": zod.string().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+})).max(createProductBodyMaterialsMax).optional()
 })
+
+export const createProductResponseMaterialsMax = 6;
+
+
 
 export const CreateProductResponse = zod.object({
   "id": zod.number(),
@@ -105,6 +157,31 @@ export const CreateProductResponse = zod.object({
   "sales": zod.number(),
   "revenue": zod.number(),
   "imageUrl": zod.string().optional(),
+  "ownerId": zod.number().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+}).and(zod.object({
+
+}).passthrough())).max(createProductResponseMaterialsMax).optional(),
+  "approvalNotes": zod.string().optional(),
+  "approvedAt": zod.string().optional(),
+  "approvedBy": zod.number().optional(),
+  "whopProductId": zod.string().optional(),
+  "whopPlanId": zod.string().optional(),
   "createdAt": zod.string()
 })
 
@@ -112,6 +189,10 @@ export const CreateProductResponse = zod.object({
 export const GetProductParams = zod.object({
   "id": zod.coerce.number()
 })
+
+export const getProductResponseMaterialsMax = 6;
+
+
 
 export const GetProductResponse = zod.object({
   "id": zod.number(),
@@ -123,6 +204,31 @@ export const GetProductResponse = zod.object({
   "sales": zod.number(),
   "revenue": zod.number(),
   "imageUrl": zod.string().optional(),
+  "ownerId": zod.number().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+}).and(zod.object({
+
+}).passthrough())).max(getProductResponseMaterialsMax).optional(),
+  "approvalNotes": zod.string().optional(),
+  "approvedAt": zod.string().optional(),
+  "approvedBy": zod.number().optional(),
+  "whopProductId": zod.string().optional(),
+  "whopPlanId": zod.string().optional(),
   "createdAt": zod.string()
 })
 
@@ -131,14 +237,39 @@ export const UpdateProductParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const updateProductBodyMaterialsMax = 6;
+
+
+
 export const UpdateProductBody = zod.object({
   "name": zod.string().optional(),
   "description": zod.string().optional(),
   "type": zod.string().optional(),
   "price": zod.number().optional(),
   "status": zod.string().optional(),
-  "imageUrl": zod.string().optional()
+  "imageUrl": zod.string().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number().optional(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+})).max(updateProductBodyMaterialsMax).optional()
 })
+
+export const updateProductResponseMaterialsMax = 6;
+
+
 
 export const UpdateProductResponse = zod.object({
   "id": zod.number(),
@@ -150,6 +281,31 @@ export const UpdateProductResponse = zod.object({
   "sales": zod.number(),
   "revenue": zod.number(),
   "imageUrl": zod.string().optional(),
+  "ownerId": zod.number().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+}).and(zod.object({
+
+}).passthrough())).max(updateProductResponseMaterialsMax).optional(),
+  "approvalNotes": zod.string().optional(),
+  "approvedAt": zod.string().optional(),
+  "approvedBy": zod.number().optional(),
+  "whopProductId": zod.string().optional(),
+  "whopPlanId": zod.string().optional(),
   "createdAt": zod.string()
 })
 
@@ -159,6 +315,132 @@ export const DeleteProductParams = zod.object({
 })
 
 export const DeleteProductResponse = zod.void()
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string(),
+  "size": zod.number().min(1),
+  "contentType": zod.string()
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string(),
+  "metadata": zod.object({
+  "name": zod.string(),
+  "size": zod.number(),
+  "contentType": zod.string()
+})
+})
+
+
+export const listAdminProductsResponseMaterialsMax = 6;
+
+
+
+export const ListAdminProductsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().optional(),
+  "type": zod.string(),
+  "price": zod.number(),
+  "status": zod.string(),
+  "sales": zod.number(),
+  "revenue": zod.number(),
+  "imageUrl": zod.string().optional(),
+  "ownerId": zod.number().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+}).and(zod.object({
+
+}).passthrough())).max(listAdminProductsResponseMaterialsMax).optional(),
+  "approvalNotes": zod.string().optional(),
+  "approvedAt": zod.string().optional(),
+  "approvedBy": zod.number().optional(),
+  "whopProductId": zod.string().optional(),
+  "whopPlanId": zod.string().optional(),
+  "createdAt": zod.string()
+})
+export const ListAdminProductsResponse = zod.array(ListAdminProductsResponseItem)
+
+
+export const ReviewProductParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ReviewProductBody = zod.object({
+  "decision": zod.enum(['approve', 'reject']),
+  "notes": zod.string().optional()
+})
+
+export const reviewProductResponseMaterialsMax = 6;
+
+
+
+export const ReviewProductResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().optional(),
+  "type": zod.string(),
+  "price": zod.number(),
+  "status": zod.string(),
+  "sales": zod.number(),
+  "revenue": zod.number(),
+  "imageUrl": zod.string().optional(),
+  "ownerId": zod.number().optional(),
+  "coverUrl": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "fileName": zod.string().optional(),
+  "fileContentType": zod.string().optional(),
+  "fileSize": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "deliveryType": zod.enum(['internal', 'external']).optional(),
+  "externalDeliveryUrl": zod.string().optional(),
+  "externalAccessUrl": zod.string().optional(),
+  "materials": zod.array(zod.object({
+  "id": zod.number(),
+  "objectPath": zod.string().optional(),
+  "name": zod.string(),
+  "contentType": zod.string(),
+  "fileSize": zod.number(),
+  "externalUrl": zod.string().optional()
+}).and(zod.object({
+
+}).passthrough())).max(reviewProductResponseMaterialsMax).optional(),
+  "approvalNotes": zod.string().optional(),
+  "approvedAt": zod.string().optional(),
+  "approvedBy": zod.number().optional(),
+  "whopProductId": zod.string().optional(),
+  "whopPlanId": zod.string().optional(),
+  "createdAt": zod.string()
+})
+
+
+export const CreateWhopCheckoutBody = zod.object({
+  "productId": zod.number()
+})
+
+export const CreateWhopCheckoutResponse = zod.object({
+  "purchaseUrl": zod.string(),
+  "checkoutId": zod.string()
+})
 
 
 export const ListSalesQueryParams = zod.object({

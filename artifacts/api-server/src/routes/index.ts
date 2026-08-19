@@ -8,6 +8,8 @@ import walletRouter from "./wallet";
 import withdrawalsRouter from "./withdrawals";
 import affiliatesRouter from "./affiliates";
 import adminRouter from "./admin";
+import storageRouter from "./storage";
+import whopRouter from "./whop";
 import { requireAuth } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -18,6 +20,8 @@ router.use(authRouter);
 
 // Protected routes — require valid JWT cookie
 router.use(requireAuth);
+router.use(storageRouter);
+router.use(whopRouter);
 router.use(dashboardRouter);
 router.use(productsRouter);
 router.use(salesRouter);

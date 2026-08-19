@@ -5,6 +5,8 @@
  * GOAT-PAY API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ProductDeliveryType } from './productDeliveryType';
+import type { ProductMaterial } from './productMaterial';
 
 export interface Product {
   id: number;
@@ -16,5 +18,22 @@ export interface Product {
   sales: number;
   revenue: number;
   imageUrl?: string;
+  ownerId?: number;
+  coverUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileContentType?: string;
+  fileSize?: number;
+  currency?: string;
+  deliveryType?: ProductDeliveryType;
+  externalDeliveryUrl?: string;
+  externalAccessUrl?: string;
+  /** @maxItems 6 */
+  materials?: ProductMaterial[];
+  approvalNotes?: string;
+  approvedAt?: string;
+  approvedBy?: number;
+  whopProductId?: string;
+  whopPlanId?: string;
   createdAt: string;
 }

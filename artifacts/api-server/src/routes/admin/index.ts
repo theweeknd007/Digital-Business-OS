@@ -101,4 +101,47 @@ router.post("/admin/withdrawals/:id/reject", requireAdmin, async (req, res): Pro
   res.json({ id: w.id, status: w.status });
 });
 
+function mapProduct(p: typeof productsTable.$inferSelect) {
+  return {
+    id: p.id, ownerId: p.ownerId ?? undefined, name: p.name, description: p.description ?? undefined,
+    type: p.type, price: parseFloat(p.price), status: p.status, sales: p.sales,
+    revenue: parseFloat(p.revenue), imageUrl: p.imageUrl ?? undefined, coverUrl: p.coverUrl ?? undefined,
+    fileUrl: p.fileUrl ?? undefined, fileName: p.fileName ?? undefined,
+    fileContentType: p.fileContentType ?? undefined, fileSize: p.fileSize ?? undefined,
+    approvalNotes: p.approvalNotes ?? undefined,
+    approvedAt: p.approvedAt instanceof Date ? p.approvedAt.toISOString() : p.approvedAt ? String(p.approvedAt) : undefined,
+    approvedBy: p.approvedBy ?? undefined, whopProductId: p.whopProductId ?? undefined,
+    whopPlanId: p.whopPlanId ?? undefined,
+    createdAt: p.createdAt instanceof Date ? p.createdAt.toISOString() : String(p.createdAt),
+  };
+}
+
+router.get("/admin/products", requireAdmin, async (_req, res): Promise<void> => {
+  const products = await db.select().from(productsTable).orderBy(desc(productsTable.createdAt));
+  res.json(products.map(mapProduct));
+});
+
+router.post("/admin/products/:id/review", requireAdmin, async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id as string, 10);
+  const body = z.object({
+    decision: z.enum(["approve", "reject"]),
+    notes: z.string().max(1000).optional(),
+  }).safeParse(req.body);
+  if (isNaN(id) || !body.success) {
+    res.status(400).json({ error: "Dados de revisão inválidos" });
+    return;
+  }
+  const [product] = await db.update(productsTable).set({
+    status: body.data.decision === "approve" ? "active" : "rejected",
+    approvalNotes: body.data.notes,
+    approvedAt: body.data.decision === "approve" ? new Date() : null,
+    approvedBy: body.data.decision === "approve" ? req.user!.userId : null,
+  }).where(eq(productsTable.id, id)).returning();
+  if (!product) {
+    res.status(404).json({ error: "Produto não encontrado" });
+    return;
+  }
+  res.json(mapProduct(product));
+});
+
 export default router;
